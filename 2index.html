@@ -4,65 +4,120 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>하코다테 여행 가이드</title>
+  <!-- CSV 데이터를 쉽게 읽게 해주는 도구(PapaParse)를 불러옵니다 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f7f9fc; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    h1 { text-align: center; color: #2c3e50; }
-    .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 30px; margin-top: 0; }
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 0; font-size: 1.2rem; }
     .res-item, .time-item { display: flex; margin-bottom: 12px; }
     .res-type { font-weight: bold; width: 70px; flex-shrink: 0; }
-    .time-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.9rem; font-weight: bold; margin-right: 15px; height: fit-content; }
+    .time-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.9rem; font-weight: bold; margin-right: 15px; height: fit-content; min-width: 45px; text-align: center; }
     .task { padding-top: 2px; }
     .notice { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+    #loading { text-align: center; color: #666; font-size: 1.1rem; margin-top: 50px; }
   </style>
 </head>
 <body>
 
-  <h1 id="title">여행 가이드 불러오는 중...</h1>
-  <p class="subtitle" id="dates"></p>
-  <div id="notice-container"></div>
+  <!-- 데이터를 불러오는 동안 보여줄 화면 -->
+  <div id="loading">일정을 불러오는 중입니다... ✈️</div>
   
-  <div class="card">
-    <h2>예약 정보</h2>
-    <div id="reservations"></div>
+  <!-- 데이터가 모두 불러와지면 보여줄 실제 화면 -->
+  <div id="app" style="display: none;">
+    <h1 id="title"></h1>
+    <p class="subtitle" id="dates"></p>
+    <div id="notice-container"></div>
+    
+    <div class="card" id="reservations-card">
+      <h2>예약 정보</h2>
+      <div id="reservations"></div>
+    </div>
+
+    <div id="itinerary-container"></div>
   </div>
 
-  <div id="itinerary-container"></div>
-
   <script>
-    // GitHub에 올린 data.json 파일을 불러옵니다.
-    fetch('data.json')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('title').textContent = data.title;
-        document.getElementById('dates').textContent = data.dates;
+    // ★스프레드시트에서 '웹에 게시' 후 얻은 CSV 링크를 아래 큰따옴표 안에 넣어주세요★
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnL6jnu_5fghrhz720BFaxs-jlmqBaDOrysElX-PzwGs1GVJBm4_wDTOS8lG8Q3jwU21UuKi--CJ9l/pub?output=csv";
+
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const data = results.data;
         
-        if(data.notice) {
-          document.getElementById('notice-container').innerHTML = `<div class="notice">💡 ${data.notice}</div>`;
+        let title = "", dates = "", notice = "";
+        let reservations = [];
+        let itineraryMap = {};
+
+        // 엑셀의 각 줄을 하나씩 읽어서 분류합니다.
+        data.forEach(row => {
+          if (!row['분류'] || row['분류'].trim() === '') return; 
+
+          const category = row['분류'].trim();
+          const itemTime = (row['항목/시간'] || '').trim();
+          const content = (row['내용'] || '').trim();
+
+          if (category === '기본정보') {
+            if (itemTime === '제목') title = content;
+            if (itemTime === '날짜') dates = content;
+            if (itemTime === '공지사항') notice = content;
+          } 
+          else if (category === '예약') {
+            reservations.push({ type: itemTime, detail: content });
+          } 
+          else {
+            // '기본정보', '예약'이 아니면 모두 일정(1일차, 2일차 등)으로 묶습니다.
+            if (!itineraryMap[category]) {
+              itineraryMap[category] = [];
+            }
+            itineraryMap[category].push({ time: itemTime, task: content });
+          }
+        });
+
+        // 분류한 데이터를 화면(HTML)에 집어넣습니다.
+        document.getElementById('title').textContent = title;
+        document.getElementById('dates').textContent = dates;
+        
+        if (notice) {
+          document.getElementById('notice-container').innerHTML = `<div class="notice">💡 ${notice}</div>`;
         }
 
-        // 예약 정보 렌더링
-        const resHtml = data.reservations.map(res => 
-          `<div class="res-item"><span class="res-type">${res.type}</span> <span>${res.detail}</span></div>`
-        ).join('');
-        document.getElementById('reservations').innerHTML = resHtml;
+        if (reservations.length > 0) {
+          document.getElementById('reservations').innerHTML = reservations.map(res => 
+            `<div class="res-item"><span class="res-type">${res.type}</span> <span>${res.detail}</span></div>`
+          ).join('');
+        } else {
+          document.getElementById('reservations-card').style.display = 'none';
+        }
 
-        // 일정 정보 렌더링
-        const itinHtml = data.itinerary.map(day => `
-          <div class="card">
-            <h2>${day.day}</h2>
-            ${day.events.map(event => `
-              <div class="time-item">
-                <span class="time-badge">${event.time}</span>
-                <span class="task">${event.task}</span>
-              </div>
-            `).join('')}
-          </div>
-        `).join('');
+        let itinHtml = '';
+        for (const [day, events] of Object.entries(itineraryMap)) {
+          itinHtml += `
+            <div class="card">
+              <h2>${day}</h2>
+              ${events.map(event => `
+                <div class="time-item">
+                  <span class="time-badge">${event.time}</span>
+                  <span class="task">${event.task}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
         document.getElementById('itinerary-container').innerHTML = itinHtml;
-      })
-      .catch(error => console.error('데이터를 불러오지 못했습니다:', error));
+
+        // 로딩 화면을 숨기고 완성된 가이드북을 짠! 보여줍니다.
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+      },
+      error: function(err) {
+        document.getElementById('loading').textContent = "데이터를 불러오지 못했습니다. 구글 시트 링크를 다시 확인해주세요 😢";
+      }
+    });
   </script>
 </body>
 </html>
