@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하코다테 여행 가이드</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f7f9fc; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    h1 { text-align: center; color: #2c3e50; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 0; font-size: 1.2rem; }
+    .res-item, .time-item { display: flex; margin-bottom: 12px; }
+    .res-type { font-weight: bold; width: 70px; flex-shrink: 0; }
+    .time-badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.9rem; font-weight: bold; margin-right: 15px; height: fit-content; }
+    .task { padding-top: 2px; }
+    .notice { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1 id="title">여행 가이드 불러오는 중...</h1>
+  <p class="subtitle" id="dates"></p>
+  <div id="notice-container"></div>
+  
+  <div class="card">
+    <h2>예약 정보</h2>
+    <div id="reservations"></div>
+  </div>
+
+  <div id="itinerary-container"></div>
+
+  <script>
+    // GitHub에 올린 data.json 파일을 불러옵니다.
+    fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('title').textContent = data.title;
+        document.getElementById('dates').textContent = data.dates;
+        
+        if(data.notice) {
+          document.getElementById('notice-container').innerHTML = `<div class="notice">💡 ${data.notice}</div>`;
+        }
+
+        // 예약 정보 렌더링
+        const resHtml = data.reservations.map(res => 
+          `<div class="res-item"><span class="res-type">${res.type}</span> <span>${res.detail}</span></div>`
+        ).join('');
+        document.getElementById('reservations').innerHTML = resHtml;
+
+        // 일정 정보 렌더링
+        const itinHtml = data.itinerary.map(day => `
+          <div class="card">
+            <h2>${day.day}</h2>
+            ${day.events.map(event => `
+              <div class="time-item">
+                <span class="time-badge">${event.time}</span>
+                <span class="task">${event.task}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+        document.getElementById('itinerary-container').innerHTML = itinHtml;
+      })
+      .catch(error => console.error('데이터를 불러오지 못했습니다:', error));
+  </script>
+</body>
+</html>
