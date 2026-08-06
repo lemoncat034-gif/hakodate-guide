@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>명탐정 코난 in 하코다테</title>
+  <title>하코다테 여름여행 가이드</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* 기본 배경 및 폰트 (탐정 수첩 테마 유지) */
+    /* 기본 배경 및 폰트 */
     body { 
       font-family: 'Noto Sans KR', sans-serif; 
       background-color: #f4f6f9; 
       background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
       background-size: 20px 20px;
       color: #333; 
-      max-width: 500px; /* 모바일 앱처럼 폭을 조금 줄임 */
+      max-width: 500px; 
       margin: 0 auto; 
       padding: 15px; 
     }
     
-    /* 상단 타이틀 (고정) */
+    /* 상단 타이틀 */
     .header-box {
       background-color: #0f3460; 
       color: white;
@@ -38,41 +38,25 @@
     h1 { font-family: 'Jua', sans-serif; margin: 0 0 5px 0; font-size: 1.6rem; letter-spacing: 1px; }
     .subtitle { color: #a9cce3; margin: 0; font-size: 0.9rem; }
 
-    /* 화면 전환 애니메이션 설정 */
+    /* 화면 전환 애니메이션 */
     .view-section { display: none; animation: fadeIn 0.4s ease-in-out; }
     .view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* 메인 메뉴 버튼 그리드 */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      padding: 10px;
-    }
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px; }
     .menu-btn {
-      background: white;
-      border: 2px solid #0f3460;
-      border-radius: 20px;
-      padding: 25px 10px;
-      text-align: center;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      background: white; border: 2px solid #0f3460; border-radius: 20px; padding: 25px 10px;
+      text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .menu-btn:active { transform: scale(0.95); background-color: #f8f9fa; }
     .menu-btn .icon { font-size: 3rem; margin-bottom: 12px; }
     .menu-btn .label { font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #0f3460; }
-
-    /* 4번째 비밀 버튼용 */
     .menu-btn.secret { border-color: #e94560; background-color: #fff0f2; }
     .menu-btn.secret .label { color: #e94560; }
 
-    /* 서브 페이지 스타일 */
+    /* 뒤로가기 버튼 */
     .back-btn {
       display: inline-flex; align-items: center; gap: 5px;
       background: #e94560; color: white; border: none;
@@ -82,17 +66,41 @@
     }
     .back-btn:active { transform: scale(0.95); }
 
-    /* 카드 및 리스트 UI */
+    /* 예약 정보 개별 카드 스타일 */
+    .res-card {
+      background: white; border-radius: 12px; padding: 18px; margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06); border-left: 6px solid #0f3460;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .res-card-header { font-weight: bold; color: #0f3460; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+    .res-card-title { font-weight: bold; font-size: 1.05rem; color: #e94560; }
+    .res-card-body { color: #333; line-height: 1.5; word-break: keep-all; font-size: 0.95rem; }
+    .res-date { color: #666; font-size: 0.9rem; display: block; margin-bottom: 4px; }
+
+    /* 일반 일정 카드 */
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #0f3460; }
     h2 { font-family: 'Jua', sans-serif; color: #0f3460; border-bottom: 2px dashed #0f3460; padding-bottom: 8px; margin-top: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 8px; }
-    .res-item, .time-item { display: flex; margin-bottom: 12px; align-items: flex-start; }
-    .res-type { font-weight: bold; width: 75px; flex-shrink: 0; color: #0f3460; }
-    .time-badge { background: #e94560; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-right: 15px; height: fit-content; min-width: 50px; text-align: center; }
-    .task { padding-top: 2px; line-height: 1.4; word-break: keep-all; }
     
+    /* 리스트 UI */
+    .time-item-wrapper { display: flex; flex-direction: column; margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 12px; }
+    .time-item-wrapper:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .time-item-top { display: flex; align-items: flex-start; }
+    .time-badge { background: #e94560; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-right: 15px; height: fit-content; min-width: 55px; text-align: center; }
+    .task-content { padding-top: 2px; line-height: 1.4; word-break: keep-all; flex: 1; }
+    .task-title { font-weight: bold; font-size: 1rem; color: #0f3460; display: block; }
+    .task-desc { font-size: 0.9rem; color: #555; display: block; margin-top: 3px; }
+    
+    /* 링크 버튼 스타일 */
+    .link-btn {
+      display: inline-block; background: #0f3460; color: white; text-decoration: none;
+      padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold;
+      margin-top: 10px; align-self: flex-start; box-shadow: 0 2px 4px rgba(15,52,96,0.2);
+    }
+    .link-btn:active { transform: scale(0.97); }
+    .itin-link { margin-left: 70px; background: #6c7a89; }
+
     .notice-card { background: #fff9c4; color: #5c4b00; padding: 20px; border-radius: 12px; font-weight: bold; text-align: center; border-left: 6px solid #fbc02d; margin-top: 10px; line-height: 1.6; }
 
-    /* 로딩 애니메이션 */
     #loading { text-align: center; color: #0f3460; font-family: 'Jua', sans-serif; font-size: 1.3rem; margin-top: 80px; }
     .skater { font-size: 2.5rem; display: inline-block; animation: skate 1.5s infinite alternate ease-in-out; margin-bottom: 10px; }
     @keyframes skate { 0% { transform: translateX(-30px) rotate(-5deg); } 100% { transform: translateX(30px) rotate(5deg); } }
@@ -100,21 +108,18 @@
 </head>
 <body>
 
-  <!-- 1. 로딩 화면 -->
   <div id="loading">
     <div class="skater">🛹</div>
     <div>진실은 언제나 하나!<br>일정을 불러오는 중입니다...</div>
   </div>
   
-  <!-- 2. 실제 앱 화면 (데이터 로드 완료 후 표시) -->
   <div id="app" style="display: none;">
-    
     <div class="header-box">
       <h1 id="title"></h1>
       <p class="subtitle" id="dates"></p>
     </div>
 
-    <!-- [뷰 1] 메인 메뉴 (홈 화면) -->
+    <!-- [뷰 1] 메인 메뉴 -->
     <div id="view-home" class="view-section active">
       <div class="menu-grid">
         <div class="menu-btn" onclick="goToView('view-reservations')">
@@ -139,10 +144,8 @@
     <!-- [뷰 2] 예약 정보 화면 -->
     <div id="view-reservations" class="view-section">
       <button class="back-btn" onclick="goToView('view-home')">◀ 홈으로</button>
-      <div class="card" id="reservations-card">
-        <h2>🎩 예약 정보</h2>
-        <div id="reservations-content"></div>
-      </div>
+      <h2 style="margin-bottom: 15px; border:none;">🎩 예약 상세 정보</h2>
+      <div id="reservations-content"></div>
     </div>
 
     <!-- [뷰 3] 일정 화면 -->
@@ -157,23 +160,17 @@
       <h2>📌 중요 단서 (공지)</h2>
       <div id="notice-content"></div>
     </div>
-
   </div>
 
   <script>
-    // 화면 전환 함수
     function goToView(viewId) {
-      // 모든 화면 숨기기
       document.querySelectorAll('.view-section').forEach(view => {
         view.classList.remove('active');
       });
-      // 선택한 화면만 보여주기
       document.getElementById(viewId).classList.add('active');
-      // 화면 전환 시 맨 위로 스크롤
       window.scrollTo(0, 0);
     }
 
-    // 구글 시트 주소
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnL6jnu_5fghrhz720BFaxs-jlmqBaDOrysElX-PzwGs1GVJBm4_wDTOS8lG8Q3jwU21UuKi--CJ9l/pub?output=csv";
 
     Papa.parse(csvUrl, {
@@ -185,62 +182,92 @@
         let title = "", dates = "", notice = "";
         let reservations = [];
         let itineraryMap = {};
+        
+        let lastCategory = ""; // 빈 칸 처리를 위한 변수
 
         data.forEach(row => {
-          if (!row['분류'] || row['분류'].trim() === '') return; 
+          // 엑셀에서 분류 칸을 비워두었을 경우 바로 위 칸의 분류를 따르도록 설정
+          const currentCategory = (row['분류'] || '').trim();
+          const category = currentCategory ? currentCategory : lastCategory;
+          if (currentCategory) lastCategory = currentCategory;
 
-          const category = row['분류'].trim();
-          const itemTime = (row['항목/시간'] || '').trim();
+          const item = (row['항목'] || '').trim();
+          const dateTime = (row['날짜/시간'] || '').trim();
+          const titleCol = (row['제목'] || '').trim();
           const content = (row['내용'] || '').trim();
+          const link = (row['링크'] || '').trim();
+
+          // 완전히 빈 줄이면 패스
+          if (!category && !item) return;
 
           if (category === '기본정보') {
-            if (itemTime === '제목') title = content;
-            if (itemTime === '날짜') dates = content;
-            if (itemTime === '공지사항') notice = content;
+            // 항목 열이 '제목', '날짜', '공지'일 때 제목/내용 열 중 작성된 값을 가져옴
+            if (item === '제목') title = titleCol || content;
+            if (item === '날짜') dates = titleCol || content || dateTime;
+            if (item === '공지') notice = titleCol || content;
           } 
           else if (category === '예약') {
-            reservations.push({ type: itemTime, detail: content });
+            reservations.push({ type: item, date: dateTime, title: titleCol, detail: content, link: link });
           } 
-          else {
-            if (!itineraryMap[category]) {
-              itineraryMap[category] = [];
+          else if (category === '일정') {
+            // 분류가 '일정'이면 항목(1일차, 2일차 등)을 그룹의 기준으로 삼음
+            const day = item;
+            if (day) {
+              if (!itineraryMap[day]) itineraryMap[day] = [];
+              // 시간, 제목, 내용 중 하나라도 적혀있다면 추가
+              if (dateTime || titleCol || content) {
+                itineraryMap[day].push({ time: dateTime, taskTitle: titleCol, taskDetail: content, link: link });
+              }
             }
-            itineraryMap[category].push({ time: itemTime, task: content });
           }
         });
 
-        // 1. 공통 정보 채우기
+        // 1. 공통 정보 세팅
         document.getElementById('title').textContent = title;
         document.getElementById('dates').textContent = dates;
         
-        // 2. 공지사항 채우기
+        // 2. 공지사항 세팅
         if (notice) {
-          // 줄바꿈이 있으면 <br>로 변환하여 출력
-          const formattedNotice = notice.replace(/\n/g, "<br>");
-          document.getElementById('notice-content').innerHTML = `<div class="notice-card">${formattedNotice}</div>`;
+          document.getElementById('notice-content').innerHTML = `<div class="notice-card">${notice.replace(/\n/g, "<br>")}</div>`;
         } else {
           document.getElementById('notice-content').innerHTML = `<div class="notice-card">등록된 공지사항이 없습니다.</div>`;
         }
 
-        // 3. 예약 정보 채우기
+        // 3. 예약 정보 세팅 (6열 DB 포맷에 맞춰 날짜, 제목, 내용 분리)
         if (reservations.length > 0) {
-          document.getElementById('reservations-content').innerHTML = reservations.map(res => 
-            `<div class="res-item"><span class="res-type">${res.type}</span> <span class="task">${res.detail}</span></div>`
-          ).join('');
+          document.getElementById('reservations-content').innerHTML = reservations.map(res => `
+            <div class="res-card">
+              <div class="res-card-header">
+                🔖 ${res.type} 
+                ${res.title ? `<span class="res-card-title">| ${res.title}</span>` : ''}
+              </div>
+              <div class="res-card-body">
+                ${res.date ? `<span class="res-date">🗓️ ${res.date}</span>` : ''}
+                ${res.detail ? `${res.detail.replace(/\n/g, "<br>")}` : ''}
+              </div>
+              ${res.link ? `<a href="${res.link}" target="_blank" class="link-btn">🔗 예약/상세 바로가기</a>` : ''}
+            </div>
+          `).join('');
         } else {
           document.getElementById('reservations-content').innerHTML = "예약 정보가 없습니다.";
         }
 
-        // 4. 일정 정보 채우기
+        // 4. 일정 정보 세팅 (시간, 제목, 내용 분리)
         let itinHtml = '';
         for (const [day, events] of Object.entries(itineraryMap)) {
           itinHtml += `
             <div class="card">
               <h2>🔍 ${day}</h2>
               ${events.map(event => `
-                <div class="time-item">
-                  <span class="time-badge">${event.time}</span>
-                  <span class="task">${event.task}</span>
+                <div class="time-item-wrapper">
+                  <div class="time-item-top">
+                    ${event.time ? `<span class="time-badge">${event.time}</span>` : ''}
+                    <div class="task-content">
+                      ${event.taskTitle ? `<span class="task-title">${event.taskTitle}</span>` : ''}
+                      ${event.taskDetail ? `<span class="task-desc">${event.taskDetail.replace(/\n/g, "<br>")}</span>` : ''}
+                    </div>
+                  </div>
+                  ${event.link ? `<a href="${event.link}" target="_blank" class="link-btn itin-link">📍 지도/정보 보기</a>` : ''}
                 </div>
               `).join('')}
             </div>
@@ -248,7 +275,6 @@
         }
         document.getElementById('itinerary-content').innerHTML = itinHtml;
 
-        // 5. 로딩 종료 및 앱 화면 표시
         setTimeout(() => {
           document.getElementById('loading').style.display = 'none';
           document.getElementById('app').style.display = 'block';
