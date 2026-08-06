@@ -5,123 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>명탐정 코난 in 하코다테</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <!-- 귀여운 폰트(Jua)와 가독성 좋은 폰트(Noto Sans KR) 불러오기 -->
   <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    /* 기본 배경 및 폰트 (탐정 수첩 테마 유지) */
     body { 
       font-family: 'Noto Sans KR', sans-serif; 
-      /* 탐정 수첩 같은 모눈종이 배경 */
       background-color: #f4f6f9; 
       background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
       background-size: 20px 20px;
       color: #333; 
-      max-width: 600px; 
+      max-width: 500px; /* 모바일 앱처럼 폭을 조금 줄임 */
       margin: 0 auto; 
       padding: 15px; 
     }
     
-    /* 상단 타이틀 디자인 (코난 자켓 + 나비넥타이 테마) */
+    /* 상단 타이틀 (고정) */
     .header-box {
-      background-color: #0f3460; /* 코난 네이비 */
+      background-color: #0f3460; 
       color: white;
       text-align: center;
-      padding: 25px 20px;
+      padding: 20px 15px;
       border-radius: 15px 15px 0 0;
-      border-bottom: 6px solid #e94560; /* 코난 레드 */
+      border-bottom: 6px solid #e94560; 
       position: relative;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      margin-top: 10px;
+      margin-top: 5px;
+      margin-bottom: 25px;
     }
-    /* 나비넥타이 아이콘 */
     .header-box::after {
-      content: '🎀';
-      font-size: 32px;
-      position: absolute;
-      bottom: -22px;
-      left: 50%;
-      transform: translateX(-50%);
+      content: '🎀'; font-size: 28px; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
     }
-    h1 { font-family: 'Jua', sans-serif; margin: 0 0 5px 0; font-size: 1.8rem; letter-spacing: 1px; }
-    .subtitle { color: #a9cce3; margin: 0; font-size: 0.95rem; }
+    h1 { font-family: 'Jua', sans-serif; margin: 0 0 5px 0; font-size: 1.6rem; letter-spacing: 1px; }
+    .subtitle { color: #a9cce3; margin: 0; font-size: 0.9rem; }
 
-    /* 공지사항 (포스트잇 느낌) */
-    .notice { 
-      background: #fff9c4; 
-      color: #5c4b00; 
-      padding: 15px 20px; 
-      border-radius: 2px 15px 15px 15px; 
-      margin: 35px 0 20px 0; 
-      font-weight: bold; 
-      text-align: center; 
-      box-shadow: 2px 3px 8px rgba(0,0,0,0.08);
-      border-left: 6px solid #fbc02d;
-      position: relative;
-    }
-    .notice::before {
-      content: '📌';
-      position: absolute;
-      top: -12px;
-      left: -10px;
-      font-size: 24px;
-    }
+    /* 화면 전환 애니메이션 설정 */
+    .view-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* 카드형 UI (사건 파일 느낌) */
-    .card { 
-      background: white; 
-      border-radius: 12px; 
-      padding: 20px; 
-      margin-bottom: 20px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+    /* 메인 메뉴 버튼 그리드 */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      padding: 10px;
+    }
+    .menu-btn {
+      background: white;
       border: 2px solid #0f3460;
-    }
-    h2 { 
-      font-family: 'Jua', sans-serif;
-      color: #0f3460; 
-      border-bottom: 2px dashed #0f3460; 
-      padding-bottom: 8px; 
-      margin-top: 0; 
-      font-size: 1.3rem; 
+      border-radius: 20px;
+      padding: 25px 10px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
     }
+    .menu-btn:active { transform: scale(0.95); background-color: #f8f9fa; }
+    .menu-btn .icon { font-size: 3rem; margin-bottom: 12px; }
+    .menu-btn .label { font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #0f3460; }
 
-    /* 리스트 및 뱃지 스타일 */
+    /* 4번째 비밀 버튼용 */
+    .menu-btn.secret { border-color: #e94560; background-color: #fff0f2; }
+    .menu-btn.secret .label { color: #e94560; }
+
+    /* 서브 페이지 스타일 */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #e94560; color: white; border: none;
+      padding: 8px 16px; border-radius: 20px; font-weight: bold;
+      font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 5px rgba(233,69,96,0.3);
+      margin-bottom: 20px; transition: transform 0.2s;
+    }
+    .back-btn:active { transform: scale(0.95); }
+
+    /* 카드 및 리스트 UI */
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #0f3460; }
+    h2 { font-family: 'Jua', sans-serif; color: #0f3460; border-bottom: 2px dashed #0f3460; padding-bottom: 8px; margin-top: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 8px; }
     .res-item, .time-item { display: flex; margin-bottom: 12px; align-items: flex-start; }
     .res-type { font-weight: bold; width: 75px; flex-shrink: 0; color: #0f3460; }
-    .time-badge { 
-      background: #e94560; /* 코난 레드 */
-      color: white; 
-      padding: 4px 10px; 
-      border-radius: 20px; /* 동글동글하게 */
-      font-size: 0.85rem; 
-      font-weight: bold; 
-      margin-right: 15px; 
-      height: fit-content; 
-      min-width: 50px; 
-      text-align: center; 
-      box-shadow: 1px 2px 4px rgba(233, 69, 96, 0.3);
-    }
+    .time-badge { background: #e94560; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-right: 15px; height: fit-content; min-width: 50px; text-align: center; }
     .task { padding-top: 2px; line-height: 1.4; word-break: keep-all; }
+    
+    .notice-card { background: #fff9c4; color: #5c4b00; padding: 20px; border-radius: 12px; font-weight: bold; text-align: center; border-left: 6px solid #fbc02d; margin-top: 10px; line-height: 1.6; }
 
-    /* 로딩 애니메이션 (코난 스케이트보드) */
+    /* 로딩 애니메이션 */
     #loading { text-align: center; color: #0f3460; font-family: 'Jua', sans-serif; font-size: 1.3rem; margin-top: 80px; }
     .skater { font-size: 2.5rem; display: inline-block; animation: skate 1.5s infinite alternate ease-in-out; margin-bottom: 10px; }
-    @keyframes skate {
-      0% { transform: translateX(-30px) rotate(-5deg); }
-      100% { transform: translateX(30px) rotate(5deg); }
-    }
+    @keyframes skate { 0% { transform: translateX(-30px) rotate(-5deg); } 100% { transform: translateX(30px) rotate(5deg); } }
   </style>
 </head>
 <body>
 
-  <!-- 로딩 화면 -->
+  <!-- 1. 로딩 화면 -->
   <div id="loading">
     <div class="skater">🛹</div>
     <div>진실은 언제나 하나!<br>일정을 불러오는 중입니다...</div>
   </div>
   
-  <!-- 실제 콘텐츠 화면 -->
+  <!-- 2. 실제 앱 화면 (데이터 로드 완료 후 표시) -->
   <div id="app" style="display: none;">
     
     <div class="header-box">
@@ -129,19 +114,66 @@
       <p class="subtitle" id="dates"></p>
     </div>
 
-    <div id="notice-container"></div>
-    
-    <div class="card" id="reservations-card">
-      <!-- 이번 극장판 주인공인 괴도키드 모자 아이콘 -->
-      <h2>🎩 예약 정보</h2>
-      <div id="reservations"></div>
+    <!-- [뷰 1] 메인 메뉴 (홈 화면) -->
+    <div id="view-home" class="view-section active">
+      <div class="menu-grid">
+        <div class="menu-btn" onclick="goToView('view-reservations')">
+          <span class="icon">🎩</span>
+          <span class="label">예약 정보</span>
+        </div>
+        <div class="menu-btn" onclick="goToView('view-itinerary')">
+          <span class="icon">🔍</span>
+          <span class="label">수사 일정</span>
+        </div>
+        <div class="menu-btn" onclick="goToView('view-notice')">
+          <span class="icon">📌</span>
+          <span class="label">중요 단서</span>
+        </div>
+        <div class="menu-btn secret" onclick="alert('진실은 언제나 하나! 하코다테에서 멋진 추억을 남기세요 🕵️‍♂️✨')">
+          <span class="icon">💊</span>
+          <span class="label">APTX4869</span>
+        </div>
+      </div>
     </div>
 
-    <div id="itinerary-container"></div>
+    <!-- [뷰 2] 예약 정보 화면 -->
+    <div id="view-reservations" class="view-section">
+      <button class="back-btn" onclick="goToView('view-home')">◀ 홈으로</button>
+      <div class="card" id="reservations-card">
+        <h2>🎩 예약 정보</h2>
+        <div id="reservations-content"></div>
+      </div>
+    </div>
+
+    <!-- [뷰 3] 일정 화면 -->
+    <div id="view-itinerary" class="view-section">
+      <button class="back-btn" onclick="goToView('view-home')">◀ 홈으로</button>
+      <div id="itinerary-content"></div>
+    </div>
+
+    <!-- [뷰 4] 공지사항 화면 -->
+    <div id="view-notice" class="view-section">
+      <button class="back-btn" onclick="goToView('view-home')">◀ 홈으로</button>
+      <h2>📌 중요 단서 (공지)</h2>
+      <div id="notice-content"></div>
+    </div>
+
   </div>
 
   <script>
-    // 연결하신 구글 시트 주소
+    // 화면 전환 함수
+    function goToView(viewId) {
+      // 모든 화면 숨기기
+      document.querySelectorAll('.view-section').forEach(view => {
+        view.classList.remove('active');
+      });
+      // 선택한 화면만 보여주기
+      document.getElementById(viewId).classList.add('active');
+      // 화면 전환 시 맨 위로 스크롤
+      window.scrollTo(0, 0);
+    }
+
+    // 구글 시트 주소
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnL6jnu_5fghrhz720BFaxs-jlmqBaDOrysElX-PzwGs1GVJBm4_wDTOS8lG8Q3jwU21UuKi--CJ9l/pub?output=csv";
 
     Papa.parse(csvUrl, {
@@ -177,26 +209,33 @@
           }
         });
 
+        // 1. 공통 정보 채우기
         document.getElementById('title').textContent = title;
         document.getElementById('dates').textContent = dates;
         
+        // 2. 공지사항 채우기
         if (notice) {
-          document.getElementById('notice-container').innerHTML = `<div class="notice">${notice}</div>`;
+          // 줄바꿈이 있으면 <br>로 변환하여 출력
+          const formattedNotice = notice.replace(/\n/g, "<br>");
+          document.getElementById('notice-content').innerHTML = `<div class="notice-card">${formattedNotice}</div>`;
+        } else {
+          document.getElementById('notice-content').innerHTML = `<div class="notice-card">등록된 공지사항이 없습니다.</div>`;
         }
 
+        // 3. 예약 정보 채우기
         if (reservations.length > 0) {
-          document.getElementById('reservations').innerHTML = reservations.map(res => 
+          document.getElementById('reservations-content').innerHTML = reservations.map(res => 
             `<div class="res-item"><span class="res-type">${res.type}</span> <span class="task">${res.detail}</span></div>`
           ).join('');
         } else {
-          document.getElementById('reservations-card').style.display = 'none';
+          document.getElementById('reservations-content').innerHTML = "예약 정보가 없습니다.";
         }
 
+        // 4. 일정 정보 채우기
         let itinHtml = '';
         for (const [day, events] of Object.entries(itineraryMap)) {
           itinHtml += `
             <div class="card">
-              <!-- 탐정의 돋보기 아이콘 -->
               <h2>🔍 ${day}</h2>
               ${events.map(event => `
                 <div class="time-item">
@@ -207,9 +246,9 @@
             </div>
           `;
         }
-        document.getElementById('itinerary-container').innerHTML = itinHtml;
+        document.getElementById('itinerary-content').innerHTML = itinHtml;
 
-        // 약간의 딜레이를 주어 스케이트보드 로딩을 귀엽게 보여줍니다
+        // 5. 로딩 종료 및 앱 화면 표시
         setTimeout(() => {
           document.getElementById('loading').style.display = 'none';
           document.getElementById('app').style.display = 'block';
